@@ -7,7 +7,7 @@ Kolkata / remote, plus a job tracker. Hosted on GitHub Pages.
 - **Job_Tracker.xlsx** — live roles + application log.
 
 ## How it stays live
-A daily scheduled task (08:07) rebuilds the dashboard from live Naukri +
+A scheduled task (every 4 hours) rebuilds the dashboard from live Naukri +
 LinkedIn data, copies it here as `index.html`, and runs `push.sh`, which
 pushes to this repo. GitHub Pages serves it at your public URL, so the shared
 link is always current.
