@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="3600"><!-- auto-reload hourly to pick up the daily data refresh -->
+<title>Gourab Kheto — Job Hunt Command Center</title>
+<style>
+  :root{color-scheme:light;
+    --accent:#2a4fb0;--accent2:#3a5fd0;--accent3:#7b6bf0;--cyan:#1fb6cf;
+    --bg:#eef1fb;--card:#ffffff;--line:#e6e9f5;--text:#1a2238;--muted:#6b7390;
+    --hot:#d6336c;--hotbg:#fde7ef;--good:#0f9d6b;--goodbg:#e4f7ef;--warn:#c47f17;--warnbg:#fdf4e1;--mut:#4a5578;--mutbg:#eceffb;
+    --grad:linear-gradient(135deg,#2a4fb0 0%,#5a4fe0 55%,#7b6bf0 100%);
+    --grad-soft:linear-gradient(135deg,#3a5fd0,#7b6bf0);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);line-height:1.5;
+    background:radial-gradient(900px 500px at 88% -10%,rgba(123,107,240,.18),transparent 60%),radial-gradient(800px 500px at -10% 8%,rgba(31,182,207,.14),transparent 55%),linear-gradient(170deg,#eef1fb 0%,#e9edfb 45%,#eef3fc 100%);background-attachment:fixed;min-height:100vh}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px 70px}
+  .hero{color:#fff;border-radius:0 0 22px 22px;padding:26px 32px 12px;position:relative;overflow:hidden;
+    background:radial-gradient(700px 360px at 82% -30%,rgba(123,107,240,.55),transparent 55%),radial-gradient(600px 300px at 10% 120%,rgba(31,182,207,.45),transparent 55%),linear-gradient(125deg,#10224a 0%,#1d3f8f 42%,#3a5fd0 78%,#5a6ee6 105%);
+    box-shadow:0 18px 44px rgba(26,40,90,.34)}
+  .hero h1{font-size:28px;font-weight:800;letter-spacing:.2px;text-shadow:0 2px 14px rgba(0,0,0,.18)}
+  .hero .role{font-size:14px;opacity:.95;margin-top:4px}.hero .role b{color:#ffd66b}
+  .hero .meta{font-size:11.5px;opacity:.72;margin-top:10px}
+  .runbtn{position:absolute;top:20px;right:26px;background:linear-gradient(135deg,#1fb6cf,#7b6bf0);color:#fff;border:none;border-radius:11px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.22);transition:.15s;font-family:inherit}
+  .runbtn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  .runbtn:disabled{opacity:.7;cursor:default;transform:none}
+  .runmsg{position:absolute;top:58px;right:26px;font-size:11px;color:#dff3ff;max-width:240px;text-align:right}
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:16px}
+  .kpi{background:linear-gradient(165deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);border-radius:16px;padding:14px 15px;cursor:pointer;transition:.18s ease;position:relative;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .kpi:hover{transform:translateY(-3px);background:linear-gradient(165deg,rgba(255,255,255,.34),rgba(255,255,255,.12));box-shadow:0 12px 26px rgba(0,0,0,.24);border-color:rgba(255,255,255,.5)}
+  .kpi .n{font-size:25px;font-weight:800;background:linear-gradient(90deg,#ffffff,#cfe4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .kpi .l{font-size:11px;opacity:.9;margin-top:3px}
+  .kpi .go{font-size:9.5px;opacity:.78;margin-top:7px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  .tabs{display:flex;gap:8px;margin:18px 0 16px;flex-wrap:wrap;padding:4px 0}
+  .tab{padding:10px 16px;border:1px solid var(--line);background:#fff;color:var(--accent);font-weight:700;font-size:13px;cursor:pointer;border-radius:13px;transition:.16s;box-shadow:0 2px 6px rgba(26,40,90,.06)}
+  .tab:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(58,95,208,.16);border-color:#c9d2f0}
+  .tab.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 8px 20px rgba(90,79,224,.38)}
+  .panel{display:none;background:linear-gradient(180deg,#ffffff,#fbfcff);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(26,40,90,.08)}
+  .panel.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.ph{font-size:21px;font-weight:800;margin-bottom:4px;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lead{color:var(--muted);font-size:13.5px;margin-bottom:16px}
+  .sec{font-size:12.5px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;margin:26px 0 12px;padding-bottom:7px;border-bottom:2px solid transparent;border-image:linear-gradient(90deg,#3a5fd0,#7b6bf0 55%,transparent) 1}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{text-align:left;background:linear-gradient(135deg,#5b4fd6,#8a6bf2);color:#fff;padding:10px 11px;font-weight:700;font-size:12px}
+  td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f5f7fe}
+  .badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;letter-spacing:.2px}
+  .b-hot{background:linear-gradient(135deg,#fde7ef,#fbd5e3);color:var(--hot)}.b-good{background:linear-gradient(135deg,#e4f7ef,#d2f1e3);color:var(--good)}
+  .b-warn{background:linear-gradient(135deg,#fdf4e1,#fbe9c8);color:var(--warn)}.b-mut{background:linear-gradient(135deg,#eceffb,#dfe5f7);color:var(--mut)}
+  .fresh{color:var(--hot);font-weight:800}
+  a.btn{color:#fff;background:var(--grad-soft);padding:6px 13px;border-radius:9px;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;display:inline-block;box-shadow:0 4px 12px rgba(58,95,208,.28);transition:.15s}
+  a.btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 7px 16px rgba(90,79,224,.36)}
+  a.lnk{color:var(--accent2);text-decoration:none;font-weight:700}a.lnk:hover{text-decoration:underline}
+  .note{font-size:12px;color:var(--mut);background:linear-gradient(135deg,#f3f6ff,#eef1fc);border-left:4px solid var(--accent2);padding:12px 14px;border-radius:10px;margin-top:16px}
+  .filters{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:2px 0 14px}
+  .filters input{flex:1;min-width:190px;padding:10px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;background:#fbfcff}
+  .filters input:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(58,95,208,.14)}
+  .chip{padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:#c4cef0;transform:translateY(-1px)}.chip.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 5px 13px rgba(90,79,224,.3)}
+  .count{font-size:12px;color:var(--muted);margin-left:auto;font-weight:600}
+  tr.hide{display:none}.empty{display:none;padding:16px;text-align:center;color:var(--muted);font-size:13px}
+  .rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .rcard{border:1px solid var(--line);border-radius:14px;padding:16px;background:linear-gradient(160deg,#ffffff,#f1f4ff);box-shadow:0 5px 16px rgba(26,40,90,.07);transition:.16s}
+  .rcard:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(58,95,208,.16)}
+  .rcard h4{color:var(--accent);font-size:15px;font-weight:800}.rcard .t{color:var(--muted);font-size:12px;margin:2px 0 9px}.rcard p{font-size:12.5px;color:#3a4264;margin-bottom:10px}
+  .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}
+  .kcol{background:linear-gradient(180deg,#f4f7ff,#eef2fc);border:1px solid var(--line);border-radius:14px;padding:11px;min-height:130px}
+  .kcol h5{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:10px;text-align:center;font-weight:800}
+  .kc{background:#fff;border:1px solid var(--line);border-left:3px solid var(--accent2);border-radius:9px;padding:9px 10px;font-size:11.5px;margin-bottom:8px;box-shadow:0 2px 6px rgba(26,40,90,.06)}
+  .kc b{display:block;color:var(--accent);font-weight:800}.kc span{color:var(--muted)}
+  .day{border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:11px;background:linear-gradient(160deg,#ffffff,#f4f7ff)}
+  .day h4{color:var(--accent);font-size:14px;margin-bottom:7px;font-weight:800}
+  .chk{display:flex;gap:9px;align-items:flex-start;font-size:13px;padding:5px 0;color:#3a4264}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent2)}
+  .pill{display:inline-block;background:var(--grad);color:#fff;font-size:11px;font-weight:800;border-radius:20px;padding:4px 13px;margin:0 6px 6px 0;box-shadow:0 4px 11px rgba(90,79,224,.26)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+  .ccard{border:1px solid var(--line);border-radius:14px;padding:16px;background:linear-gradient(160deg,#ffffff,#f6f8ff);box-shadow:0 5px 16px rgba(26,40,90,.07);transition:.16s}
+  .ccard:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(58,95,208,.15)}
+  .ccard h4{color:var(--accent);font-size:15px;font-weight:800}.ccard .prov{color:var(--muted);font-size:12px;margin:2px 0 8px}.ccard p{font-size:12.5px;color:#3a4264;margin-bottom:10px}.ccard .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .skill{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .skill .dot{width:10px;height:10px;border-radius:50%;margin-top:6px;flex:0 0 auto;box-shadow:0 0 0 3px rgba(58,95,208,.1)}.skill b{color:var(--accent)}.skill span{font-size:13px;color:#3a4264}
+  .salgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .salcard{border:1px solid var(--line);border-radius:15px;padding:18px;background:linear-gradient(160deg,#ffffff,#f3f6ff);box-shadow:0 6px 18px rgba(26,40,90,.08)}
+  .salcard .big{font-size:23px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .bar{height:10px;border-radius:6px;background:#e6eaf6;margin:8px 0;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#1fb6cf,#3a5fd0 55%,#7b6bf0);border-radius:6px}
+  @media(max-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}.kanban{grid-template-columns:1fr 1fr}.salgrid{grid-template-columns:1fr}}
+  .lstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 4px}
+  .lstat{border:1px solid var(--line);border-radius:14px;padding:13px 15px;background:linear-gradient(160deg,#fff,#eef3ff);box-shadow:0 5px 16px rgba(26,40,90,.07)}
+  .lstat .v{font-size:21px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lstat .k{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600}
+  .tl{display:flex;flex-direction:column;gap:13px;margin-top:6px}
+  .tlrow{display:grid;grid-template-columns:106px 1fr;gap:14px;align-items:stretch}
+  .tlwhen{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;border-radius:13px;color:#fff;padding:10px 6px;background:var(--grad-soft);box-shadow:0 5px 14px rgba(90,79,224,.28)}
+  .tlwhen .mo{font-size:13px;font-weight:800;letter-spacing:.3px}.tlwhen .hr{font-size:10px;opacity:.93;font-weight:700}
+  .tlcard{border:1px solid var(--line);border-left:4px solid var(--accent2);border-radius:14px;padding:13px 16px;background:linear-gradient(160deg,#fff,#f6f8ff);box-shadow:0 5px 16px rgba(26,40,90,.07);transition:.16s}
+  .tlcard:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(58,95,208,.15)}
+  .tlcard.ai{border-left-color:#7b6bf0}.tlcard.ora{border-left-color:var(--warn)}.tlcard.cap{border-left-color:var(--good)}
+  .tlh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:3px}
+  .tlh b{color:var(--accent);font-size:14.5px;font-weight:800}
+  .tlcard p{font-size:12.5px;color:#3a4264;margin:4px 0 8px}
+  .cchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .cchip{font-size:11px;font-weight:700;color:var(--accent);background:#eef2fc;border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+  .ms{font-size:12px;color:var(--good);font-weight:700;background:var(--goodbg);border-radius:8px;padding:7px 10px}
+  .cmeta{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+  @media(max-width:860px){.lstrip{grid-template-columns:1fr 1fr}.tlrow{grid-template-columns:80px 1fr}}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap" style="padding-bottom:0">
+  <h1>Gourab Kheto &middot; Job Hunt Command Center</h1>
+  <div class="role">Oracle PL/SQL Techno-Functional Consultant <b>&rarr; Data Engineering</b> &middot; Howrah / Kolkata &middot; open to remote</div>
+  <div class="meta">Live data refreshed from logged-in Naukri &amp; LinkedIn &middot; 24 Jun 2026. Naukri shows <b>108</b> Oracle PL/SQL roles in Kolkata posted in the last 24h; LinkedIn shows <b>100+</b> Oracle PL/SQL Developer roles (Greater Kolkata, 7-day). Applicant counts below were read live from the postings today. Tip: the cards below are clickable.</div>
+  <button id="runbtn" onclick="runRefresh()">&#128260; Refresh data now</button>
+  <div class="runmsg" id="runmsg"></div>
+  <div class="kpis">
+    <div class="kpi" data-go="tr"><div class="n">108</div><div class="l">Oracle PL/SQL roles &middot; Kolkata, last 24h (Naukri, live)</div><div class="go">&rarr; All Roles</div></div>
+    <div class="kpi" data-go="ta" data-chip="Freshest"><div class="n">100+</div><div class="l">Oracle PL/SQL Developer roles &middot; Greater Kolkata, 7-day (LinkedIn, live)</div><div class="go">&rarr; Apply Now &middot; freshest</div></div>
+    <div class="kpi" data-go="ta"><div class="n">7</div><div class="l">Best matches ranked</div><div class="go">&rarr; Apply Now</div></div>
+    <div class="kpi" data-go="thm"><div class="n">2</div><div class="l">Key active recruiters</div><div class="go">&rarr; Hidden Market</div></div>
+    <div class="kpi" data-go="ts"><div class="n">&#8377;6&ndash;22L</div><div class="l">Reachable band (current + upskill)</div><div class="go">&rarr; Salary</div></div>
+  </div>
+</div></div>
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-t="ta">&#128293; Apply Now</div>
+    <div class="tab" data-t="thm">&#128269; Hidden Market</div>
+    <div class="tab" data-t="tr">&#127919; All Roles</div>
+    <div class="tab" data-t="tg">&#128640; Grow</div>
+    <div class="tab" data-t="tp">&#129517; Plan &amp; Path</div>
+    <div class="tab" data-t="ts">&#128176; Salary &amp; Market</div>
+    <div class="tab" data-t="tlearn">&#127891; Learn</div>
+  </div>
+  <div class="panel active" id="ta">
+    <h2 class="ph">Apply now &mdash; your daily action surface</h2>
+    <div class="lead">Ranked best matches read live from today's logged-in Naukri (108 roles, last 24h) and LinkedIn (100+ roles, 7-day) on 24 Jun 2026. Match % and ATS are honest estimates from skill / experience overlap, not official scores.</div>
+    <div class="note" style="margin:0 0 16px;border-left-color:var(--hot)"><b>Reality check:</b> across 500+ live Oracle roles in Greater Kolkata, none meet ALL of (85%+ &middot; 24h &middot; &lt;50 applicants &middot; remote/hybrid &middot; above-market) &mdash; most are onsite Kolkata, fresh hot roles hit 80&ndash;100 applicants within hours, and big-co posts hide the recruiter. Your real edge: the active recruiters (Hidden Market tab).</div>
+
+    <div class="sec">Ranked best matches (24h)</div>
+    <table>
+      <thead><tr><th>#</th><th>Role</th><th>Company</th><th>Match*</th><th>Posted</th><th>Salary</th><th>Mode</th><th>Why it matches / gap</th><th>Apply</th></tr></thead>
+      <tbody>
+        <tr style="background:#e8f5ee"><td>1</td><td>Application Developer &ndash; Oracle JDE <span class="badge b-hot">early applicant</span></td><td>IBM</td><td><span class="badge b-good">~72%</span></td><td>4 days</td><td>n/d</td><td>Hybrid</td><td>Oracle Apps + PL/SQL fit and only <b>5 clicked apply</b> &mdash; rare early-applicant edge on a big-co role. Gap: JD Edwards (JDE E1) modules.</td><td><a class="btn" href="https://www.linkedin.com/jobs/view/4428246919/" target="_blank">Apply &#9656;</a></td></tr>
+        <tr><td>2</td><td>Snowflakes BlueYonder Specialist <span class="badge b-hot">pivot</span></td><td>Som Imaging Informatics</td><td><span class="badge b-good">~70%</span></td><td>1 day</td><td>n/d</td><td>Kolkata</td><td>Oracle + Snowflake + Python + data-warehousing &mdash; near-perfect pivot bridge, posted today, 2&ndash;5 yrs band fits. Gap: BlueYonder/SCM, Azure.</td><td><a class="btn" href="https://www.naukri.com/oracle-pl-sql-jobs-in-kolkata?jobAge=1" target="_blank">Find &#9656;</a></td></tr>
+        <tr><td>3</td><td>Oracle EBS Technical Consultant</td><td>Deloitte <span class="badge b-mut">Mobilution</span></td><td><span class="badge b-good">~78%</span></td><td>carried</td><td>&#8377;14&ndash;22.5L</td><td>Onsite</td><td>Core PL/SQL + Oracle Apps Technical + EBS all match; top of your salary band. Gap: AR/AP/GL hands-on, asks 7&ndash;12 yrs.</td><td><a class="btn" href="https://www.naukri.com/mobilution-it-systems-jobs-careers-1656816" target="_blank">Apply &#9656;</a></td></tr>
+        <tr><td>4</td><td>Senior Data Engineer <span class="badge b-hot">pivot</span></td><td>Tredence</td><td><span class="badge b-mut">~58% now</span></td><td>1 day</td><td>n/d</td><td>Hybrid</td><td>SQL transfers; Databricks / PySpark / Medallion role, hybrid Kolkata &mdash; high future value. Gap: Azure Databricks, PySpark, Unity Catalog.</td><td><a class="btn" href="https://www.naukri.com/oracle-pl-sql-jobs-in-kolkata?jobAge=1" target="_blank">Find &#9656;</a></td></tr>
+        <tr><td>5</td><td>OIC Developer (3&ndash;8 yrs)</td><td>Deloitte <span class="badge b-mut">Mobilution</span></td><td><span class="badge b-good">~75%</span></td><td>carried</td><td>&#8377;8.5&ndash;18.5L</td><td>Onsite</td><td>PL/SQL core fits, experience band fits you. Gap: OIC, Oracle Fusion, FBDI, BI Publisher.</td><td><a class="btn" href="https://www.naukri.com/job-listings-oic-developer-mobilution-it-systems-kolkata-3-to-8-years-180626928044" target="_blank">Apply &#9656;</a></td></tr>
+        <tr><td>6</td><td>DB Developer (PL/SQL Oracle, .Net) <span class="badge b-warn">saturated</span></td><td>Papigen</td><td><span class="badge b-warn">~72%</span></td><td>5 days</td><td>&#8377;15&ndash;23L</td><td>Remote</td><td>Strong remote + salary match, but now <b>100+ applicants</b> &mdash; only worth a fast Easy Apply. Gap: .Net component.</td><td><a class="btn" href="https://www.linkedin.com/jobs/view/4429626123/" target="_blank">Apply &#9656;</a></td></tr>
+        <tr><td>7</td><td>Python Engineer <span class="badge b-hot">pivot</span></td><td>Iflow</td><td><span class="badge b-mut">~60% now</span></td><td>1 day</td><td>n/d</td><td>Kolkata</td><td>Python / PySpark / Azure Data Factory / T-SQL pivot role, junior band (1&ndash;3 yrs) &mdash; entry into data-eng. Gap: ADF, PySpark depth.</td><td><a class="btn" href="https://www.naukri.com/oracle-pl-sql-jobs-in-kolkata?jobAge=1" target="_blank">Find &#9656;</a></td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">*Estimate from skill + experience overlap. Weaker / ignore (niche stacks): Guidewire (EY), Helix/BMC (Cradlepoint), Nexthink/Syniti/Ataccama/PL-1&middot;Fortran/JUTRO (Mobilution), DAM (TCS).</div>
+
+    <div class="sec">Premium insights &mdash; applicant counts (read live from the postings on 24 Jun)</div>
+    <table>
+      <thead><tr><th>Role</th><th>Company</th><th>Applicants</th><th>Salary</th><th>Mode</th><th>Contact reality</th></tr></thead>
+      <tbody>
+        <tr style="background:#e8f5ee"><td><b>Application Developer &ndash; Oracle JDE</b></td><td>IBM</td><td>5 clicked apply</td><td>n/d</td><td>Hybrid</td><td>Promoted &middot; 4 days &middot; responses off LinkedIn &mdash; early-applicant window open, apply now.</td></tr>
+        <tr><td>DB Developer (PL/SQL, .Net)</td><td>Papigen</td><td>Over 100 applicants</td><td>&#8377;15&ndash;23L</td><td>Remote</td><td>Easy Apply &middot; 5 days old &middot; saturated &mdash; lower priority now.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sec">Companies actively hiring now (LinkedIn + Naukri) &middot; 24 Jun: Naukri shows <b>108</b> Oracle PL/SQL roles in Kolkata in the last 24h (top hirers LTM 6, Accenture 5, IBM 5, EY 5; 96 work-from-office, 12 hybrid); LinkedIn shows <b>100+</b> Oracle PL/SQL Developer roles in Greater Kolkata (7-day). Live portal counts.</div>
+    <div class="filters">
+      <input id="q0" type="text" placeholder="Filter - company, role, recruiter, remote...">
+      <span class="chip on" data-f="all">All</span>
+      <span class="chip" data-f="fresh">Freshest (&lt;1 day)</span>
+      <span class="chip" data-f="pivot">Data-eng pivot</span>
+      <span class="count" id="cnt0"></span>
+    </div>
+    <table id="jt0">
+      <thead><tr><th>Company</th><th>Role</th><th>Posted</th><th>Status</th><th>Contact / How to reach</th></tr></thead>
+      <tbody>
+        <tr data-f="fresh"><td>IBM</td><td>Application Developer &mdash; Oracle JDE</td><td>4 days ago</td><td><span class="badge b-good">Early applicant &middot; 5 clicked</span></td><td>LinkedIn &mdash; message hiring team</td></tr>
+        <tr data-f="fresh pivot"><td>Som Imaging Informatics</td><td>Snowflakes BlueYonder Specialist (Oracle + Snowflake)</td><td>~1 day ago</td><td><span class="badge b-hot">Pivot bridge</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh pivot"><td>Tredence</td><td>Senior Data Engineer (Databricks, Hybrid)</td><td>~1 day ago</td><td><span class="badge b-hot">Pivot bridge</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh pivot"><td>PointAbout Inc.</td><td>Senior Data Engineer (Snowflake &amp; Python)</td><td>~1 day ago</td><td><span class="badge b-hot">Pivot bridge</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh pivot"><td>Iflow</td><td>Python Engineer (PySpark, ADF, T-SQL)</td><td>~1 day ago</td><td><span class="badge b-hot">Pivot bridge</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh pivot"><td>Tuteck Technologies</td><td>Databricks Data Engineer</td><td>~1 day ago</td><td><span class="badge b-hot">Pivot bridge</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh"><td>Capgemini</td><td>Technical Architect (Oracle / SQL)</td><td>~1 day ago</td><td><span class="badge b-good">Early applicant</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh"><td>Emperen Technologies</td><td>Planisware Administrator (Oracle / SQL)</td><td>just now</td><td><span class="badge b-good">Early applicant</span></td><td>Naukri &mdash; recruiter on listing</td></tr>
+        <tr data-f="fresh"><td>IBM</td><td>Application Developer &mdash; SAP ABAP HANA</td><td>~1 day ago</td><td><span class="badge b-good">Early applicant</span></td><td>LinkedIn &mdash; message hiring team</td></tr>
+        <tr data-f=""><td>Deloitte <span class="badge b-mut">Mobilution</span></td><td>Oracle EBS Technical Consultant (&#8377;14&ndash;22.5L)</td><td>carried</td><td><span class="badge b-good">Strong fit</span></td><td>Naukri &mdash; <b>Mobilution IT Systems</b></td></tr>
+        <tr data-f=""><td>Tata Consultancy Services</td><td>SAP ABAP Developer</td><td>recent</td><td><span class="badge b-hot">Actively Hiring</span></td><td>LinkedIn; TCS NextStep</td></tr>
+        <tr data-f=""><td>Papigen</td><td>DB Developer (PL/SQL, .Net) &mdash; Remote</td><td>5 days ago</td><td><span class="badge b-warn">100+ applicants &middot; saturated</span></td><td>LinkedIn Easy Apply</td></tr>
+      </tbody>
+    </table>
+    <div class="empty" id="empty0">No roles match that filter.</div>
+
+    <div class="sec">Your two best live contacts (one message &rarr; many roles)</div>
+    <div class="rgrid">
+      <div class="rcard"><h4>Tech ECS Limited</h4><div class="t">Staffing / recruiter &middot; LinkedIn</div><p>15+ Oracle &amp; Data Engineer roles across Greater Kolkata, several in the last 13 hours &mdash; including a Data Engineer (Python/SQL) bridge role.</p><a class="btn" href="https://www.linkedin.com/jobs/search/?keywords=Oracle&location=Kolkata%2C%20West%20Bengal%2C%20India" target="_blank">Find on LinkedIn &#9656;</a></div>
+      <div class="rcard"><h4>Mobilution IT Systems</h4><div class="t">Recruitment consultant &middot; Naukri</div><p>Placing Deloitte &amp; IBM Oracle roles in Kolkata (OIC, EBS Technical &#8377;14&ndash;22.5L), posted in the last day.</p><a class="btn" href="https://www.naukri.com/mobilution-it-systems-jobs-careers-1656816" target="_blank">View all their roles &#9656;</a></div>
+    </div>
+    <div class="note">Portals gate recruiter emails &mdash; LinkedIn = message the hiring team in-app; Naukri shows the posting recruiter. I can open any posting and pull the named recruiter + draft outreach for your approval.</div>
+  </div>
+  <div class="panel" id="thm">
+    <h2 class="ph">Hidden market &mdash; target companies &amp; who to approach</h2>
+    <div class="lead">RADAR "R + A" applied to your profile: live hiring signals, the <b>hiring-manager title to approach</b> (not HR), and a one-line hook. At your &#8377;6&ndash;22L level this is a queue-skip <i>supplement</i>, not a replacement for job boards.</div>
+    <div class="sec">Tier 1 &mdash; Active recruiters (fastest: one contact, many unposted roles)</div>
+    <table>
+      <thead><tr><th>Company</th><th>Live signal</th><th>Approach</th><th>Outreach hook</th></tr></thead>
+      <tbody>
+        <tr style="background:#e8f5ee"><td><b>Tech ECS Limited</b></td><td>15+ Oracle &amp; Data-Eng roles in Greater Kolkata within 13 hrs</td><td>LinkedIn recruiter (named on posts)</td><td>"Saw your Oracle EBS/PL-SQL + Data Engineer openings &mdash; 4+ yrs PL/SQL at PSI Metals, ramping on OIC. Open to a quick call?"</td></tr>
+        <tr style="background:#e8f5ee"><td><b>Mobilution IT Systems</b></td><td>Placing Deloitte/IBM Oracle roles (EBS Tech &#8377;14&ndash;22.5L, OIC) &mdash; last day</td><td>Posting recruiter (named on Naukri)</td><td>"Your Deloitte EBS Technical &amp; OIC roles fit my PL/SQL + Oracle Apps background &mdash; CV attached, can we connect?"</td></tr>
+        <tr><td>Logic Planet</td><td>PL/SQL Developer 4&ndash;6 yrs &mdash; your exact band, Kolkata</td><td>Recruiter on listing</td><td>"Your 4&ndash;6 yr PL/SQL Kolkata role matches me exactly &mdash; 30-sec proof of fit."</td></tr>
+      </tbody>
+    </table>
+    <div class="sec">Tier 2 &mdash; MNC consultancies (volume + &#8377;10&ndash;22L band)</div>
+    <table>
+      <thead><tr><th>Company</th><th>Live signal</th><th>Approach (title to find)</th><th>Outreach hook</th></tr></thead>
+      <tbody>
+        <tr><td>EY</td><td>8 fresh Oracle roles in Kolkata last week</td><td>Manager / Sr Manager &mdash; Technology Consulting (Oracle)</td><td>Reference the "Oracle DB Developer SQL/PLSQL Senior" post + a PSI tuning win.</td></tr>
+        <tr><td>Deloitte</td><td>Multiple Oracle Fusion/EBS/OIC roles, Kolkata</td><td>Oracle Practice Sr Manager / Delivery Lead</td><td>Reference EBS Technical Consultant; lead with Material Allocator project.</td></tr>
+        <tr><td>IBM</td><td>Oracle JDE &amp; Cloud roles, 1 hr&ndash;1 day fresh</td><td>Application Development Manager &mdash; Oracle</td><td>Reference Oracle Cloud Consultant; note PL/SQL + ETL depth.</td></tr>
+        <tr><td>TCS</td><td>Oracle PL/SQL roles + FY26 ~42,000 hires</td><td>Oracle Delivery Manager (+ TCS NextStep)</td><td>Reference Oracle PL/SQL Developer post; 4+ yrs production tuning.</td></tr>
+        <tr><td>Infosys</td><td>LIMS/Oracle roles + 20,000 FY26 hires</td><td>Technology Lead &mdash; Oracle</td><td>Reference LIMS Consultant; manufacturing-domain fit.</td></tr>
+        <tr><td>Cognizant</td><td>3 Oracle PL/SQL roles in last-24h Kolkata search</td><td>Oracle Practice Manager</td><td>Lead with steel/metals APS-MES + PL/SQL.</td></tr>
+        <tr><td>Accenture</td><td>Integration Engineer / Custom Software, Greater Kolkata</td><td>Associate Manager &mdash; Oracle / Data Eng</td><td>Integration + PL/SQL; bridge toward data engineering.</td></tr>
+        <tr><td>Jade Global</td><td>Oracle Fusion Cloud Q2C Functional Consultant, Kolkata</td><td>Oracle Cloud Practice Lead</td><td>Position EBS/PL-SQL base + OIC/Fusion ramp.</td></tr>
+      </tbody>
+    </table>
+    <div class="sec">Tier 3 &mdash; Product / data / growth (pivot + remote upside)</div>
+    <table>
+      <thead><tr><th>Company</th><th>Live signal</th><th>Approach</th><th>Outreach hook</th></tr></thead>
+      <tbody>
+        <tr style="background:#fdecea"><td><b>Papigen</b></td><td>Remote DB Developer (PL/SQL), &#8377;15&ndash;23L, 12 hrs &mdash; apply fast</td><td>Delivery Manager / recruiter</td><td>Apply + message same day: "PL/SQL core fit, available immediately, remote-ready."</td></tr>
+        <tr><td>Tredence</td><td>Data Engineer&ndash;GCP, hybrid Kolkata; data/AI scale-up</td><td>Data Engineering Manager</td><td>"My Oracle SQL/ETL transfers; building a dbt+Snowflake project now."</td></tr>
+        <tr><td>Cloudera</td><td>Staff SW Engineer &mdash; Database, 4 hrs fresh</td><td>Engineering Manager &mdash; Database</td><td>Deep PL/SQL + performance-tuning angle.</td></tr>
+        <tr><td>EzeRx</td><td>SQL/Database Developer &mdash; Actively Hiring (health-tech)</td><td>Founder / CTO / Eng Lead</td><td>"I own requirement&rarr;go-live" full-SDLC range.</td></tr>
+        <tr><td>Osfin.ai</td><td>DevOps Engineer Kolkata &mdash; Actively Hiring (fintech)</td><td>Founding Engineer / CTO</td><td>DB depth + willingness to broaden scope.</td></tr>
+        <tr><td>Iflow</td><td>PL/SQL Lead Developer, Kolkata &mdash; posted Today</td><td>Tech Lead / Delivery Manager</td><td>Oracle + Python + data-warehousing overlap.</td></tr>
+      </tbody>
+    </table>
+    <div class="sec">Dream companies (hiring you this week)</div>
+    <div class="rgrid">
+      <div class="rcard"><h4>MNCs</h4><div class="t">Most fresh Kolkata roles</div><p><b>EY</b> (8 fresh), <b>Deloitte</b>, <b>IBM</b>, <b>TCS</b>, <b>Infosys</b>, <b>Cognizant</b> &mdash; the &#8377;10&ndash;22L band, reachable via OIC/Fusion upskilling.</p></div>
+      <div class="rcard"><h4>Product / Data</h4><div class="t">Technical alignment</div><p><b>Tredence</b> (data/AI), <b>Cloudera</b> (database), <b>Papigen</b> (remote PL/SQL). Growth + closer to data engineering.</p></div>
+      <div class="rcard"><h4>Startups</h4><div class="t">Fast replies</div><p><b>Osfin.ai</b>, <b>EzeRx</b>, <b>Iflow</b>. Smaller teams value your full-SDLC Oracle range.</p></div>
+    </div>
+    <div class="note"><b>Macro signals:</b> Kolkata has ~260,000 IT/ITeS professionals with 3,000-seat TCS/Cognizant/Wipro centers; TCS plans ~42,000 and Infosys ~20,000 FY26 hires; SaaS firms with $40M+ funding are scaling India teams. <b>How to use ("A"):</b> search the "Approach" title + company on LinkedIn, send a 70-word note referencing the signal + one quantified PSI Metals result. Start with Tier 1 today.</div>
+  </div>
+
+  <div class="panel" id="tr">
+    <h2 class="ph">All roles &mdash; current skill set</h2>
+    <div class="lead">Matched to your CV: Oracle SQL / PL/SQL, performance tuning, stored procedures &amp; packages, dynamic SQL, data modeling, APS/MES. Filtered to <b>Kolkata or Remote</b>.</div>
+    <div class="filters">
+      <input id="q1" type="text" placeholder="Filter by keyword - PL/SQL, Naukri, remote...">
+      <span class="chip on" data-loc="all">All</span><span class="chip" data-loc="kolkata">Kolkata</span><span class="chip" data-loc="remote">Remote</span>
+      <span class="count" id="cnt1"></span>
+    </div>
+    <table id="jt1">
+      <thead><tr><th>Source / Role</th><th>Location</th><th>Live count</th><th>Priority</th><th>Contact / Apply via</th><th>Open</th></tr></thead>
+      <tbody>
+        <tr data-loc="kolkata"><td>Naukri &mdash; Oracle PL/SQL Developer, Kolkata</td><td>Kolkata</td><td>252 jobs</td><td><span class="badge b-hot">HOT</span></td><td>Naukri &mdash; recruiter on listing</td><td><a class="btn" href="https://www.naukri.com/oracle-pl-sql-jobs-in-kolkata" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="kolkata"><td>Naukri &mdash; same, posted last 24h</td><td>Kolkata</td><td>108 jobs (live)</td><td><span class="badge b-hot">HOT &middot; fresh</span></td><td>Naukri &mdash; recruiter on listing</td><td><a class="btn" href="https://www.naukri.com/oracle-pl-sql-jobs-in-kolkata?jobAge=1" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="kolkata"><td>LinkedIn &mdash; Oracle PL/SQL Developer, Kolkata (7-day)</td><td>Kolkata</td><td>100+ jobs (live)</td><td><span class="badge b-hot">HOT</span></td><td>LinkedIn &mdash; message the job poster</td><td><a class="btn" href="https://www.linkedin.com/jobs/search/?keywords=Oracle%20PL%2FSQL%20Developer&location=Kolkata%2C%20West%20Bengal%2C%20India&f_TPR=r604800" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="kolkata"><td>LinkedIn &mdash; Oracle (all roles), Greater Kolkata</td><td>Kolkata</td><td>552 jobs (live, web)</td><td><span class="badge b-hot">HOT</span></td><td>LinkedIn &mdash; message the job poster</td><td><a class="btn" href="https://in.linkedin.com/jobs/oracle-jobs-greater-kolkata-area" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="kolkata"><td>Foundit &mdash; Oracle EBS / PL-SQL, Kolkata</td><td>Kolkata</td><td>14 jobs</td><td><span class="badge b-good">Good</span></td><td>Foundit &mdash; recruiter on listing</td><td><a class="btn" href="https://www.foundit.in/search/oracle-ebs-jobs-in-kolkata" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="remote"><td>LinkedIn &mdash; PL/SQL, Remote India</td><td>Remote</td><td>866 jobs</td><td><span class="badge b-hot">HOT</span></td><td>LinkedIn &mdash; message the job poster</td><td><a class="btn" href="https://in.linkedin.com/jobs/pl-sql-remote-jobs" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="remote"><td>Foundit &mdash; PL/SQL Developer, Remote</td><td>Remote</td><td>37 jobs</td><td><span class="badge b-hot">HOT</span></td><td>Foundit &mdash; recruiter on listing</td><td><a class="btn" href="https://www.foundit.in/search/pl-sql-developer-jobs-in-remote" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="remote"><td>Indeed &mdash; Oracle PL/SQL, Remote</td><td>Remote</td><td>8 jobs</td><td><span class="badge b-good">Good</span></td><td>Indeed &mdash; apply via posting</td><td><a class="btn" href="https://in.indeed.com/q-oracle-plsql-l-remote-jobs.html" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="remote"><td>Wellfound &mdash; Oracle PL/SQL Developer</td><td>Remote</td><td>live feed</td><td><span class="badge b-good">Good</span></td><td>Wellfound &mdash; message founders direct</td><td><a class="btn" href="https://wellfound.com/role/oracle-pl-sql-developer" target="_blank">Open &#9656;</a></td></tr>
+        <tr data-loc="remote"><td>Glassdoor &mdash; PL/SQL Developer (set Remote)</td><td>Remote</td><td>830 jobs</td><td><span class="badge b-mut">Broad</span></td><td>Glassdoor &mdash; company on listing</td><td><a class="btn" href="https://www.glassdoor.co.in/Job/pl-sql-developer-jobs-SRCH_KO0,16.htm" target="_blank">Open &#9656;</a></td></tr>
+      </tbody>
+    </table>
+    <div class="empty" id="empty1">No roles match that filter.</div>
+    <div class="note">Apply-tip: lead with a quantified win &mdash; the Material Allocator PL/SQL logic at PSI Metals, or performance-tuning gains on high-volume manufacturing data.</div>
+  </div>
+  <div class="panel" id="tg">
+    <h2 class="ph">Grow &mdash; upskilling, ATS gaps &amp; certifications</h2>
+    <div class="lead">Your single highest-leverage move: 2&ndash;3 months on <b>OIC + Oracle Fusion</b> flips a dozen fresh &#8377;10&ndash;22L Deloitte/IBM roles from ~75% to 85%+ matches &mdash; faster income ROI than the data-eng pivot (your 12-month play).</div>
+    <div class="sec">Data-engineering pivot &mdash; skills to develop</div>
+    <div class="skill"><span class="dot" style="background:var(--hot)"></span><span><b>dbt</b> &mdash; transformation layer; maps onto your PL/SQL work. <span class="badge b-hot">Start here</span></span></div>
+    <div class="skill"><span class="dot" style="background:var(--hot)"></span><span><b>Snowflake</b> &mdash; most in-demand cloud warehouse in India; pairs with dbt.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--warn)"></span><span><b>Python (intermediate+)</b> &mdash; from foundational to ETL scripts, pandas, API ingestion.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--warn)"></span><span><b>Airflow / Dagster</b> &mdash; pipeline orchestration &amp; scheduling.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--accent2)"></span><span><b>AWS data services</b> &mdash; Glue, S3, Redshift, Lambda (builds on AWS Fundamentals).</span></div>
+    <div class="skill"><span class="dot" style="background:var(--accent2)"></span><span><b>Git &amp; dimensional modeling</b> &mdash; version control + star-schema patterns.</span></div>
+    <div class="sec">ATS &amp; gap analysis (what's blocking 85%+)</div>
+    <div class="grid">
+      <div class="ccard"><h4>Missing skills (recurring)</h4><p><b>Oracle Integration Cloud (OIC)</b> &middot; <b>Oracle Fusion / Fusion Middleware</b> &middot; FBDI &middot; BI Publisher / OTBI &middot; EBS finance modules (AR/AP/GL). For pivot: GCP / Snowflake / dbt.</p><div class="row"><span class="badge b-hot">Learn OIC + Fusion first</span></div></div>
+      <div class="ccard"><h4>Keywords to add (only if true)</h4><p>"RICEFW", "Oracle Apps Technical", "Interfaces &amp; Conversions", "BI Publisher", "Data Migration", "ETL". Your CV already scores well on Oracle/PL-SQL/performance-tuning.</p><div class="row"><span class="badge b-good">Quick ATS win</span></div></div>
+      <div class="ccard"><h4>Interview topics to prep</h4><p>PL/SQL tuning (indexing, partitioning, bulk collect), Material Allocator deep-dive, OIC integration patterns &amp; FBDI, EBS module data flows, a Python/ETL transition story.</p><div class="row"><span class="badge b-mut">Per shortlist</span></div></div>
+    </div>
+    <div class="sec">Certifications to earn next</div>
+    <div class="grid">
+      <div class="ccard"><h4>Oracle PL/SQL Developer Certified Professional</h4><div class="prov">Oracle &middot; 1Z0-149</div><p>Validates your core skill &mdash; strongest signal for senior Oracle roles.</p><div class="row"><span class="badge b-good">Recommended</span><a class="lnk" href="https://education.oracle.com/oracle-database-program-with-pl-sql/pexam_1Z0-149" target="_blank">Details &#9656;</a></div></div>
+      <div class="ccard"><h4>dbt Analytics Engineering Certification</h4><div class="prov">dbt Labs</div><p>Closest to your PL/SQL transformation work &mdash; fastest pivot signal.</p><div class="row"><span class="badge b-hot">Pivot &middot; 1st</span><a class="lnk" href="https://www.getdbt.com/dbt-certification" target="_blank">Details &#9656;</a></div></div>
+      <div class="ccard"><h4>SnowPro Core Certification</h4><div class="prov">Snowflake &middot; 100 Q &middot; pass 750/1000</div><p>Most in-demand data-platform cert in India. No prerequisites.</p><div class="row"><span class="badge b-hot">Pivot &middot; 2nd</span><a class="lnk" href="https://learn.snowflake.com/en/certifications/" target="_blank">Details &#9656;</a></div></div>
+      <div class="ccard"><h4>AWS Certified Data Engineer &ndash; Associate</h4><div class="prov">AWS &middot; DEA-C01 &middot; pass 720/1000</div><p>Builds on AWS Cloud Fundamentals; pipelines &amp; orchestration.</p><div class="row"><span class="badge b-warn">Pivot &middot; stretch</span><a class="lnk" href="https://aws.amazon.com/certification/certified-data-engineer-associate/" target="_blank">Details &#9656;</a></div></div>
+    </div>
+    <div class="note">Already held: AWS Cloud Computing Fundamentals &middot; Web Dev (Internshala) &middot; PHP Web Dev (Ejobindia) &middot; Communication Skills (TCS iON) &middot; OB &amp; HRM (GIBS). Near-term, add an <b>OIC / Oracle Fusion</b> credential.</div>
+  </div>
+
+  <div class="panel" id="tp">
+    <h2 class="ph">Plan &amp; Path &mdash; strategy + weekly execution</h2>
+    <div class="lead">Your long-term AI-resilient path up top; the weekly pipeline &amp; checklist to execute it below.</div>
+    <div class="sec">&#129517; AI-resilient growth path</div>
+    <div class="note" style="border-left-color:var(--hot)"><b>Honest verdict:</b> the two-track plan points the right way but is <b>not yet "perfect."</b> A dbt/Snowflake pivot on its own lands in the layer AI compresses fastest &mdash; data/analytics postings fell ~15% YoY through late 2025 and code-gen builds routine pipelines 45&ndash;50% faster. The fix isn't a new destination; it's adding the two things AI can't replicate and you half-own: <b>industrial-manufacturing domain depth</b> + <b>architecture ownership</b>, then aiming the pivot at <b>data-for-AI &amp; governance</b>, not commodity ETL.</div>
+    <div class="sec">The one principle</div>
+    <div class="note"><b>AI automates the typing &mdash; not the judgment, the domain, or the accountability.</b> The 2026 premium goes to AI fluency stacked on deep domain expertise (~56% more than peers). Your scarce asset isn't "PL/SQL" &mdash; it's that you can <i>read a steel plant</i>. Most data engineers can't. That's the moat.</div>
+    <div class="sec">Where AI WILL cut the road &mdash; avoid as a destination</div>
+    <div class="skill"><span class="dot" style="background:var(--hot)"></span><span>Pure PL/SQL CRUD, hand-coded stored procs, report writing &mdash; commodity code-gen territory.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--hot)"></span><span>Generic ETL pipeline assembly with no domain or governance layer on top.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--hot)"></span><span>Manual DBA / routine maintenance &mdash; self-healing, automated databases are here.</span></div>
+    <div class="sec">Where the road stays open &mdash; aim here</div>
+    <div class="skill"><span class="dot" style="background:var(--good)"></span><span><b>Industrial / manufacturing data architecture</b> &mdash; genuinely scarce; your metals / APS-MES / Material-Allocator background is the differentiator.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--good)"></span><span><b>Data platform &amp; governance</b> &mdash; quality, lineage, contracts. The upstream problem AI adoption <i>creates more of</i>.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--good)"></span><span><b>Data-for-AI</b> &mdash; clean, governed data + retrieval layers that feed RAG systems and agents.</span></div>
+    <div class="skill"><span class="dot" style="background:var(--good)"></span><span><b>Orchestrating AI, not competing with it</b> &mdash; owning architecture, tradeoffs and accountability.</span></div>
+    <div class="sec">The path &mdash; "Domain-Anchored Data/AI Engineer"</div>
+    <div class="grid">
+      <div class="ccard"><h4>Phase 0 &middot; now&ndash;3 mo</h4><div class="prov">Stabilise cash, harvest the moat</div><p>Keep applying Track A (Oracle EBS / OIC-Fusion, &#8377;14&ndash;22L) &mdash; it funds the pivot and OIC/Fusion is itself an up-move. Reframe every PL/SQL / PSI Metals win as "I move, model &amp; govern high-volume industrial data."</p></div>
+      <div class="ccard"><h4>Phase 1 &middot; 3&ndash;9 mo</h4><div class="prov">Bridge skills</div><p>Python + advanced SQL &rarr; dbt &rarr; Snowflake <b>plus</b> the AI-durable add-ons: data modelling, Airflow, and data quality / governance. Portfolio: a manufacturing analytics pipeline (MES data &rarr; Snowflake &rarr; dbt &rarr; dashboard).</p></div>
+      <div class="ccard"><h4>Phase 2 &middot; 9&ndash;18 mo</h4><div class="prov">Add the AI layer</div><p>Vector DBs + embeddings; one RAG pipeline over industrial / maintenance docs; basic LLM + agent orchestration (LangChain). Target title: Data Engineer (AI / Platform). Reaches the GenAI-adjacent band (&#8377;20&ndash;70L) without becoming a research scientist.</p></div>
+      <div class="ccard"><h4>Phase 3 &middot; 18 mo+</h4><div class="prov">Compound into architecture</div><p>Data Platform Engineer / Data Architect / "AI-data" lead &mdash; the judgment-and-accountability seat AI doesn't take. Remote-international (&#8377;28&ndash;42L+) becomes realistic.</p></div>
+    </div>
+    <div class="sec">Three forks &mdash; pick by appetite</div>
+    <table>
+      <thead><tr><th>Fork</th><th>Path</th><th>Ceiling</th><th>Risk / effort</th><th>Best if you want&hellip;</th></tr></thead>
+      <tbody>
+        <tr><td><b>Conservative</b></td><td>Oracle &rarr; OIC / Fusion / Cloud architect</td><td>Lower</td><td><span class="badge b-good">Lowest</span></td><td>Max stability; ride Oracle's own AI-cloud spend</td></tr>
+        <tr style="background:#e8f5ee"><td><b>Recommended</b></td><td>Domain-anchored Data + AI engineer (above)</td><td>High</td><td><span class="badge b-warn">Moderate</span></td><td>Best risk/reward; leverage what you already own</td></tr>
+        <tr><td><b>Aggressive</b></td><td>Full GenAI / RAG engineer</td><td>Highest (&#8377;20&ndash;70L)</td><td><span class="badge b-hot">Highest</span></td><td>Biggest upside, willing to grind hardest</td></tr>
+      </tbody>
+    </table>
+    <div class="sec">Durable-skill checklist &mdash; the things AI won't cut</div>
+    <div class="skill"><span class="dot" style="background:var(--good)"></span><span>Domain depth (manufacturing / industrial) &middot; Architecture &amp; system design &middot; Data governance / quality / contracts &middot; AI orchestration + tool fluency &middot; Stakeholder communication &amp; accountability.</span></div>
+    <div class="note">Anything on this list compounds. Anything that's "just typing code a model can generate" does not. See the full write-up: <b>Gourab_AI_Resilient_Growth_Path.md</b>.</div>
+    <div class="sec">&#128203; Weekly execution &mdash; pipeline &amp; actions</div>
+    <div class="kanban">
+      <div class="kcol"><h5>To apply</h5>
+        <div class="kc"><b>Deloitte &mdash; EBS Tech Consultant</b><span>Naukri &middot; &#8377;14&ndash;22.5L &middot; #1</span></div>
+        <div class="kc"><b>Papigen &mdash; DB Dev (remote)</b><span>LinkedIn &middot; &#8377;15&ndash;23L &middot; apply fast</span></div>
+        <div class="kc"><b>Deloitte &mdash; OIC Developer</b><span>Naukri &middot; 3&ndash;8 yrs &middot; #2</span></div>
+        <div class="kc"><b>Logic Planet &mdash; PL/SQL Dev</b><span>Naukri &middot; 4&ndash;6 yrs fit</span></div>
+        <div class="kc"><b>EY &mdash; DB Dev SQL/PLSQL</b><span>LinkedIn &middot; actively hiring</span></div>
+      </div>
+      <div class="kcol"><h5>Applied</h5><div class="kc" style="border-left-color:#cbd5e1;color:#94a3b8"><b>&mdash;</b><span>move applied roles here</span></div></div>
+      <div class="kcol"><h5>Recruiter call</h5><div class="kc" style="border-left-color:#cbd5e1;color:#94a3b8"><b>&mdash;</b></div></div>
+      <div class="kcol"><h5>Interview</h5><div class="kc" style="border-left-color:#cbd5e1;color:#94a3b8"><b>&mdash;</b></div></div>
+      <div class="kcol"><h5>Offer</h5><div class="kc" style="border-left-color:#cbd5e1;color:#94a3b8"><b>&mdash;</b></div></div>
+    </div>
+    <div><span class="pill">15 applications / week</span><span class="pill">10 recruiter messages</span><span class="pill">5 hrs portfolio project</span><span class="pill">3 hrs OIC/Fusion or dbt</span></div>
+    <div class="day" style="margin-top:14px"><h4>Every weekday (~45 min)</h4>
+      <label class="chk"><input type="checkbox">Apply to 3 fresh roles (&lt;48h) from Apply Now &mdash; lead with a quantified PSI Metals win.</label>
+      <label class="chk"><input type="checkbox">Message 2 recruiters (start with Mobilution &amp; Tech ECS).</label>
+      <label class="chk"><input type="checkbox">Log each application in Job_Tracker.xlsx &rarr; Application Log.</label>
+    </div>
+    <div class="day"><h4>Monday &mdash; plan &middot; Tue&ndash;Thu &mdash; apply &middot; Friday &mdash; follow up</h4>
+      <label class="chk"><input type="checkbox">Mon: shortlist 10 target roles into "To apply".</label>
+      <label class="chk"><input type="checkbox">Tue&ndash;Thu: hit daily apply + message targets; tailor cover letters.</label>
+      <label class="chk"><input type="checkbox">Fri: follow up on no-reply after 5 days; 2 hrs upskilling, commit to GitHub.</label>
+    </div>
+    <div class="note">Detailed logging lives in <b>Job_Tracker.xlsx &rarr; Application Log</b>. Tell me outcomes and I'll move pipeline cards.</div>
+  </div>
+
+  <div class="panel" id="ts">
+    <h2 class="ph">Salary &amp; market insights</h2>
+    <div class="lead">Benchmarks for your two tracks. Use these to set expectations and negotiate.</div>
+    <div class="salgrid">
+      <div class="salcard"><div style="color:var(--muted);font-size:12px">CURRENT &middot; Oracle PL/SQL, Kolkata</div><div class="big">&#8377;4.6 &ndash; 7.3 LPA</div><div class="bar"><i style="width:50%"></i></div><p style="font-size:12.5px;color:#374151">Kolkata early-career PL/SQL &asymp; &#8377;4.6&ndash;5.5L; national avg &asymp; &#8377;7.3L. With 4+ yrs and consulting depth, aim <b>&#8377;6&ndash;9L</b> in Kolkata, more at MNCs.</p></div>
+      <div class="salcard"><div style="color:var(--muted);font-size:12px">CONSULTING roles seen this week</div><div class="big">&#8377;10 &ndash; 22.5 LPA</div><div class="bar"><i style="width:85%"></i></div><p style="font-size:12.5px;color:#374151">Deloitte EBS Tech &#8377;14&ndash;22.5L, OIC &#8377;8.5&ndash;18.5L, IBM Oracle Cloud &#8377;10&ndash;15L. OIC/Fusion/EBS skills lift the band sharply.</p></div>
+      <div class="salcard"><div style="color:var(--muted);font-size:12px">PIVOT &middot; Data Eng (dbt + Snowflake), India</div><div class="big">&#8377;14 &ndash; 22 LPA</div><div class="bar"><i style="width:70%"></i></div><p style="font-size:12.5px;color:#374151">General Snowflake data-eng &#8377;14&ndash;22L; ~5 yrs &#8377;20&ndash;30L. Pay up 8&ndash;12% YoY.</p></div>
+      <div class="salcard"><div style="color:var(--muted);font-size:12px">PIVOT &middot; Senior remote (international)</div><div class="big">&#8377;28 &ndash; 42 LPA</div><div class="bar"><i style="width:100%"></i></div><p style="font-size:12.5px;color:#374151">Senior Snowflake + dbt, remote for international firms &mdash; the ceiling the pivot aims at.</p></div>
+    </div>
+    <div class="note">Biggest pay jumps come from (a) Oracle Cloud/OIC/Fusion or (b) the dbt/Snowflake pivot &mdash; both build on what you already have.</div>
+  </div>
+
+  <div class="panel" id="tlearn">
+    <h2 class="ph">Learn &mdash; your 12-month upskilling academy</h2>
+    <div class="lead">A free-first, time-bound plan that turns the AI-resilient path into a weekly habit. Built around ~8&ndash;10 hrs/week while you keep earning on the Oracle track. Prices indicative (Jun 2026) &mdash; verify on each provider's site; exam fees are separate from training.</div>
+    <div class="lstrip">
+      <div class="lstat"><div class="v">12 mo</div><div class="k">to a job-ready data + AI pivot</div></div>
+      <div class="lstat"><div class="v">~8&ndash;10</div><div class="k">hours / week (sustainable)</div></div>
+      <div class="lstat"><div class="v">~&#8377;16k</div><div class="k">core cash (exams + 1 OIC course)</div></div>
+      <div class="lstat"><div class="v">3 + 4</div><div class="k">portfolio projects + certs</div></div>
+    </div>
+
+    <div class="sec">&#128197; The 12-month time-bound plan</div>
+    <div class="tl">
+      <div class="tlrow"><div class="tlwhen"><span class="mo">Mo 1&ndash;2</span><span class="hr">~8 h/wk</span></div>
+        <div class="tlcard"><div class="tlh"><b>Foundations &mdash; Python + advanced SQL</b><span class="badge b-good">Free</span></div>
+        <p>Build the muscle everything else sits on. Lean on your PL/SQL head-start for SQL; spend the new time on Python.</p>
+        <div class="cchips"><span class="cchip">Kaggle Learn</span><span class="cchip">DataCamp &mdash; DE track</span></div>
+        <div class="ms">&#127919; Milestone: rebuild a PSI Metals query in Python/pandas &middot; master window functions, CTEs &amp; query tuning.</div></div></div>
+
+      <div class="tlrow"><div class="tlwhen"><span class="mo">Mo 3&ndash;4</span><span class="hr">~9 h/wk</span></div>
+        <div class="tlcard"><div class="tlh"><b>Modern stack I &mdash; dbt + Snowflake</b><span class="badge b-hot">Cert</span></div>
+        <p>The fastest pivot signal: dbt maps almost 1:1 onto your transformation work; Snowflake is the most-asked platform in India.</p>
+        <div class="cchips"><span class="cchip">dbt Fundamentals (free)</span><span class="cchip">Snowflake University (free)</span></div>
+        <div class="ms">&#127891; Milestone: pass <b>SnowPro Core</b> &middot; ship your first dbt project to GitHub.</div></div></div>
+
+      <div class="tlrow"><div class="tlwhen"><span class="mo">Mo 5&ndash;6</span><span class="hr">~9 h/wk</span></div>
+        <div class="tlcard cap"><div class="tlh"><b>Modern stack II &mdash; orchestration + portfolio</b><span class="badge b-good">Project</span></div>
+        <p>Tie it together with scheduling, dimensional modelling and version control &mdash; the architecture layer AI doesn't replace.</p>
+        <div class="cchips"><span class="cchip">Astronomer Academy (Airflow)</span><span class="cchip">Dimensional modelling</span><span class="cchip">Git</span></div>
+        <div class="ms">&#128296; Portfolio #1 &mdash; manufacturing pipeline: MES-style data &rarr; Snowflake &rarr; dbt &rarr; dashboard, scheduled in Airflow.</div></div></div>
+
+      <div class="tlrow"><div class="tlwhen"><span class="mo">Mo 7&ndash;8</span><span class="hr">~8 h/wk</span></div>
+        <div class="tlcard ai"><div class="tlh"><b>AI layer I &mdash; RAG + vector DBs</b><span class="badge b-good">Free</span></div>
+        <p>Enter the band AI <i>expands</i>: retrieval systems that need clean, governed data &mdash; exactly your strength.</p>
+        <div class="cchips"><span class="cchip">DeepLearning.AI &mdash; RAG</span><span class="cchip">Vector databases</span><span class="cchip">LangChain basics</span></div>
+        <div class="ms">&#128296; Portfolio #2 &mdash; a RAG assistant over industrial / maintenance / SOP documents.</div></div></div>
+
+      <div class="tlrow"><div class="tlwhen"><span class="mo">Mo 9&ndash;10</span><span class="hr">~8 h/wk</span></div>
+        <div class="tlcard ai"><div class="tlh"><b>AI layer II &mdash; agents + data governance</b><span class="badge b-warn">Deeper</span></div>
+        <p>Agentic orchestration plus the data-contracts / quality layer that makes AI outputs trustworthy and auditable.</p>
+        <div class="cchips"><span class="cchip">LangChain + LangGraph</span><span class="cchip">Data contracts &amp; quality</span></div>
+        <div class="ms">&#128296; Portfolio #3 &mdash; an agentic demo + a LinkedIn / blog write-up of all three projects.</div></div></div>
+
+      <div class="tlrow"><div class="tlwhen"><span class="mo">Mo 11&ndash;12</span><span class="hr">~7 h/wk</span></div>
+        <div class="tlcard cap"><div class="tlh"><b>Consolidate &amp; switch</b><span class="badge b-hot">Apply</span></div>
+        <p>Polish the portfolio, add a stretch cert, and start interviewing for the target title.</p>
+        <div class="cchips"><span class="cchip">AWS DE Associate (optional)</span><span class="cchip">dbt cert</span><span class="cchip">Portfolio polish</span></div>
+        <div class="ms">&#127919; Milestone: apply to <b>Data Engineer (AI / Platform)</b> roles with 3 projects + 2&ndash;3 certs.</div></div></div>
+
+      <div class="tlrow"><div class="tlwhen" style="background:linear-gradient(135deg,#c47f17,#e0a23a)"><span class="mo">Mo 1&ndash;3</span><span class="hr">parallel</span></div>
+        <div class="tlcard ora"><div class="tlh"><b>Cash engine &mdash; Oracle OIC / Fusion</b><span class="badge b-warn">Income now</span></div>
+        <p>Run alongside the pivot. 2&ndash;3 focused months on OIC/Fusion flips a dozen fresh &#8377;10&ndash;22L Deloitte/IBM roles to 85%+ matches &mdash; funds everything above.</p>
+        <div class="cchips"><span class="cchip">Udemy &mdash; Deep-dive OIC 3</span><span class="cchip">Oracle 1Z0-1042</span></div>
+        <div class="ms">&#127919; Milestone: lift current matches from ~75% &rarr; 85%+ &middot; land an Oracle consulting offer this quarter.</div></div></div>
+    </div>
+
+    <div class="sec">&#9201;&#65039; Weekly rhythm (make it a habit)</div>
+    <div class="day"><h4>~8 hours, spread so it never feels heavy</h4>
+      <div><span class="pill">Mon&ndash;Fri &middot; 1 hr lessons</span><span class="pill">Sat &middot; 3 hr labs / project</span><span class="pill">Sun &middot; review + commit to GitHub</span><span class="pill">Fri &middot; 30 min job-track upkeep</span></div>
+      <div class="note" style="margin-top:12px">Protect the Saturday block &mdash; that's where the portfolio (the thing that actually gets you hired) gets built. Lessons compound; projects convert.</div>
+    </div>
+
+    <div class="sec">&#127891; The course catalog (premium picks, in order)</div>
+    <div class="grid">
+      <div class="ccard"><h4>Kaggle Learn &mdash; Python, SQL, Pandas</h4><div class="prov">Kaggle</div><div class="cmeta"><span class="badge b-good">FREE</span><span class="badge b-mut">~15 hrs</span><span class="badge b-mut">Beginner</span></div><p>Fastest free hands-on ramp; short notebook lessons. The right first step before any paid track.</p><div class="row"><span class="badge b-good">Step 1</span><a class="lnk" href="https://www.kaggle.com/learn" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>Data Engineer Career Track</h4><div class="prov">DataCamp</div><div class="cmeta"><span class="badge b-warn">~&#8377;1&ndash;2k/mo</span><span class="badge b-mut">~80 hrs</span><span class="badge b-mut">Beg&rarr;Int</span></div><p>Structured Python + SQL + ETL + dbt + Snowflake, all in-browser with graded exercises.</p><div class="row"><span class="badge b-hot">Best structured</span><a class="lnk" href="https://www.datacamp.com/tracks/data-engineer" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>dbt Fundamentals</h4><div class="prov">dbt Labs (official)</div><div class="cmeta"><span class="badge b-good">FREE</span><span class="badge b-mut">~5 hrs</span><span class="badge b-hot">Pivot &middot; 1st</span></div><p>Closest to your PL/SQL transformation work. Follow with the dbt Analytics Engineering cert (~$200 exam).</p><div class="row"><span class="badge b-hot">Highest signal</span><a class="lnk" href="https://learn.getdbt.com/catalog" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>Snowflake University &rarr; SnowPro Core</h4><div class="prov">Snowflake</div><div class="cmeta"><span class="badge b-good">Free courses</span><span class="badge b-warn">Exam $175</span><span class="badge b-mut">~30 hrs</span></div><p>Most in-demand data-platform cert in India. No prerequisites &mdash; study free, then sit COF-C03.</p><div class="row"><span class="badge b-hot">Pivot &middot; 2nd</span><a class="lnk" href="https://learn.snowflake.com/en/certifications/snowpro-core-c03/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>Apache Airflow &mdash; orchestration</h4><div class="prov">Astronomer Academy</div><div class="cmeta"><span class="badge b-good">FREE</span><span class="badge b-warn">+Udemy ~&#8377;600</span><span class="badge b-mut">~12 hrs</span></div><p>Free vendor academy; Marc Lamberti's Udemy "Hands-On Airflow" is the popular paid deep-dive.</p><div class="row"><span class="badge b-good">Scheduling</span><a class="lnk" href="https://academy.astronomer.io/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>DeepLearning.AI short courses</h4><div class="prov">DeepLearning.AI (Andrew Ng)</div><div class="cmeta"><span class="badge b-good">FREE</span><span class="badge b-mut">1&ndash;2 hrs each</span><span class="badge b-hot">AI &middot; start</span></div><p>"LangChain for LLM App Dev", "Building &amp; Evaluating Advanced RAG", "Vector Databases" &mdash; hands-on and current.</p><div class="row"><span class="badge b-hot">AI layer</span><a class="lnk" href="https://www.deeplearning.ai/short-courses/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>LangChain + LangGraph (Agentic AI)</h4><div class="prov">Udemy</div><div class="cmeta"><span class="badge b-warn">~&#8377;600</span><span class="badge b-mut">~20 hrs</span><span class="badge b-mut">Int&rarr;Adv</span></div><p>Project-based agent + RAG engineering once you've done the free foundations.</p><div class="row"><span class="badge b-warn">AI &middot; deeper</span><a class="lnk" href="https://www.udemy.com/course/langchain/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>Deep-dive into Oracle Integration (OIC 3)</h4><div class="prov">Udemy &middot; preps 1Z0-1042</div><div class="cmeta"><span class="badge b-warn">~&#8377;600</span><span class="badge b-mut">34+ hrs</span><span class="badge b-hot">Cash engine</span></div><p>Real-time examples; cracks the OCP Application Integration exam. Best value OIC start.</p><div class="row"><span class="badge b-hot">Highest ROI now</span><a class="lnk" href="https://www.udemy.com/course/deep-dive-into-oracle-integration/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>Oracle Integration &mdash; official cert</h4><div class="prov">Oracle University</div><div class="cmeta"><span class="badge b-warn">Paid</span><span class="badge b-mut">1Z0-1042</span><span class="badge b-good">Recognised</span></div><p>The credential recruiters recognise; pricier than Udemy but official.</p><div class="row"><span class="badge b-good">Official</span><a class="lnk" href="https://education.oracle.com/integration/integration-cloud/product_704" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>AWS Certified Data Engineer &ndash; Associate</h4><div class="prov">AWS &middot; DEA-C01</div><div class="cmeta"><span class="badge b-warn">Exam $150</span><span class="badge b-good">Free study</span><span class="badge b-mut">Stretch</span></div><p>Builds on your AWS Fundamentals; study free on AWS Skill Builder. A strong Month 11&ndash;12 stretch cert.</p><div class="row"><span class="badge b-warn">Optional</span><a class="lnk" href="https://aws.amazon.com/certification/certified-data-engineer-associate/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>Scaler &mdash; Data Science &amp; Engineering</h4><div class="prov">Scaler &middot; India bootcamp</div><div class="cmeta"><span class="badge b-warn">~&#8377;2&ndash;4L &middot; EMI</span><span class="badge b-mut">9&ndash;12 mo</span><span class="badge b-mut">Mentored</span></div><p>Only if you want mentorship + placement support instead of self-study. Optional, not required.</p><div class="row"><span class="badge b-mut">Optional</span><a class="lnk" href="https://www.scaler.com/data-science-course/" target="_blank">Open &#9656;</a></div></div>
+      <div class="ccard"><h4>upGrad &mdash; Data Engineering (IIIT-B)</h4><div class="prov">upGrad &middot; university-badged</div><div class="cmeta"><span class="badge b-warn">~&#8377;3&ndash;4L</span><span class="badge b-mut">12&ndash;18 mo</span><span class="badge b-mut">PG badge</span></div><p>Heavier and pricier &mdash; pick only for the structure and brand-name certificate.</p><div class="row"><span class="badge b-mut">Optional</span><a class="lnk" href="https://www.upgrad.com/data-engineering-course/" target="_blank">Open &#9656;</a></div></div>
+    </div>
+
+    <div class="sec">&#9989; Certs &amp; milestones tracker</div>
+    <div class="day">
+      <label class="chk"><input type="checkbox">Mo 3 &mdash; Oracle OIC <b>1Z0-1042</b> (cash engine) &middot; lifts current job matches to 85%+.</label>
+      <label class="chk"><input type="checkbox">Mo 4 &mdash; <b>SnowPro Core</b> (Snowflake) &middot; ~&#8377;15k exam.</label>
+      <label class="chk"><input type="checkbox">Mo 6 &mdash; <b>Portfolio #1</b>: manufacturing pipeline live on GitHub.</label>
+      <label class="chk"><input type="checkbox">Mo 6&ndash;11 &mdash; <b>dbt Analytics Engineering</b> cert &middot; ~&#8377;17k exam.</label>
+      <label class="chk"><input type="checkbox">Mo 8 &mdash; <b>Portfolio #2</b>: RAG assistant over industrial docs.</label>
+      <label class="chk"><input type="checkbox">Mo 10 &mdash; <b>Portfolio #3</b>: agentic demo + published write-up.</label>
+      <label class="chk"><input type="checkbox">Mo 12 &mdash; <b>AWS Data Engineer Associate</b> (optional stretch) &middot; start applying.</label>
+    </div>
+
+    <div class="note"><b>Budget reality:</b> the core path costs ~&#8377;16k cash (SnowPro $175 + one Udemy OIC course), because foundations, dbt, Snowflake study, Airflow and the AI layer are all free. Add the dbt (~&#8377;17k) and AWS (~&#8377;13k) exams only if a target job asks for them &mdash; total with all stretch certs ~&#8377;45k. The &#8377;2&ndash;4L bootcamps are entirely optional. Prices indicative (Jun 2026) &mdash; confirm on each site before paying.</div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+      document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});
+      t.classList.add('active');document.getElementById(t.dataset.t).classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+  document.querySelectorAll('.kpi[data-go]').forEach(function(k){
+    k.addEventListener('click',function(){
+      var tab=document.querySelector('.tab[data-t="'+k.getAttribute('data-go')+'"]');
+      if(tab){tab.click();}
+      var chip=k.getAttribute('data-chip');
+      if(chip){
+        var panel=document.getElementById(k.getAttribute('data-go'));
+        if(panel){panel.querySelectorAll('.chip').forEach(function(c){if(c.textContent.indexOf(chip)>-1){c.click();}});}
+      }
+    });
+  });
+  function wireFilter(tableId,inputId,cntId,emptyId,attr){
+    var table=document.getElementById(tableId);if(!table)return;
+    var rows=[].slice.call(table.querySelectorAll('tbody tr'));
+    var inp=document.getElementById(inputId),cnt=document.getElementById(cntId),emp=document.getElementById(emptyId);
+    var panel=table.closest('.panel');var chips=[].slice.call(panel.querySelectorAll('.chip'));var key='all';
+    function run(){
+      var term=(inp.value||'').toLowerCase().trim();var shown=0;
+      rows.forEach(function(r){
+        var okKey=(key==='all')||((' '+(r.getAttribute('data-'+attr)||'')+' ').indexOf(key)>-1);
+        var okText=!term||r.textContent.toLowerCase().indexOf(term)>-1;
+        if(okKey&&okText){r.classList.remove('hide');shown++;}else{r.classList.add('hide');}
+      });
+      cnt.textContent=shown+' of '+rows.length;emp.style.display=shown?'none':'block';
+    }
+    inp.addEventListener('input',run);
+    chips.forEach(function(c){c.addEventListener('click',function(){chips.forEach(function(x){x.classList.remove('on')});c.classList.add('on');key=c.getAttribute('data-'+attr);run();});});
+    run();
+  }
+  wireFilter('jt0','q0','cnt0','empty0','f');
+  wireFilter('jt1','q1','cnt1','empty1','loc');
+  function runRefresh(){
+    var b=document.getElementById('runbtn'),m=document.getElementById('runmsg');
+    if(window.cowork&&window.cowork.runScheduledTask){
+      try{window.cowork.runScheduledTask('gourab-job-tracker-refresh');b.textContent='\u23F3 Refresh started';b.disabled=true;m.textContent='Pulling live Naukri + LinkedIn. The dashboard file and a summary update in ~1-2 min.';}catch(e){m.textContent='Could not start: '+e;}
+    } else {
+      m.textContent='Open this from the Cowork sidebar to run on demand. Otherwise the 8 AM daily schedule refreshes it automatically.';
+    }
+  }
+</script>
+</body>
+</html>
